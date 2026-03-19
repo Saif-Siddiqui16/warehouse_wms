@@ -72,6 +72,7 @@ export default function EditProduct() {
     const [categoryModalOpen, setCategoryModalOpen] = useState(false);
     const [supplierModalOpen, setSupplierModalOpen] = useState(false);
     const [products, setProducts] = useState([]);
+    const [locations, setLocations] = useState([]);
 
     const fetchProducts = useCallback(async () => {
         if (!token) return;
@@ -82,6 +83,25 @@ export default function EditProduct() {
             setProducts([]);
         }
     }, [token]);
+
+    const warehouseId = Form.useWatch('warehouseId', form);
+
+    const fetchLocations = useCallback(async () => {
+        if (!token || !warehouseId) {
+            setLocations([]);
+            return;
+        }
+        try {
+            const res = await apiRequest(`/api/locations?warehouseId=${warehouseId}`, { method: 'GET' }, token);
+            setLocations(Array.isArray(res?.data) ? res.data : []);
+        } catch (_) {
+            setLocations([]);
+        }
+    }, [token, warehouseId]);
+
+    useEffect(() => {
+        fetchLocations();
+    }, [fetchLocations]);
 
     /** Save cartons to API immediately (no need to click Save Changes) */
     const saveCartonsToApi = useCallback(async (newCartonList) => {
@@ -206,6 +226,9 @@ export default function EditProduct() {
         if (typeof ms === 'string') { try { ms = JSON.parse(ms); } catch { ms = {}; } }
         ms = (ms && typeof ms === 'object' && !Array.isArray(ms)) ? ms : {};
         const num = (v) => (v != null && v !== '' ? Number(v) : undefined);
+
+        const firstStock = Array.isArray(productData.ProductStocks) && productData.ProductStocks.length > 0 ? productData.ProductStocks[0] : null;
+
         form.setFieldsValue({
             name: productData.name ?? '',
             sku: productData.sku ?? '',
@@ -224,7 +247,9 @@ export default function EditProduct() {
             customsTariff: productData.customsTariff ?? undefined,
             hdSku: ms.hdSku ?? '',
             hdSaleSku: ms.hdSaleSku ?? '',
-            warehouseId: ms.warehouseId ?? '',
+            warehouseId: firstStock ? firstStock.warehouseId : (ms.warehouseId ?? undefined),
+            locationId: firstStock ? firstStock.locationId : undefined,
+            openingStock: firstStock ? parseFloat(firstStock.quantity) : undefined,
             ebayId: ms.ebayId ?? '',
             amazonSku: ms.amazonSku ?? '',
             amazonSkuSplitBefore: ms.amazonSkuSplitBefore ?? '',
@@ -325,6 +350,9 @@ export default function EditProduct() {
                 reorderQty: values.reorderQty != null ? values.reorderQty : null,
                 maxStock: values.maxStock != null ? values.maxStock : null,
                 status: values.status || 'ACTIVE',
+                openingStock: values.openingStock || 0,
+                initialWarehouseId: values.warehouseId || null,
+                initialLocationId: values.locationId || null,
                 priceLists: {
                     AMAZON: values.priceAmazon != null ? Number(values.priceAmazon) : null,
                     EBAY: values.priceEbay != null ? Number(values.priceEbay) : null,
@@ -801,15 +829,6 @@ export default function EditProduct() {
                             </Form.Item>
                         </Col>
                         <Col xs={24} md={12}>
-                            <Form.Item label="Warehouse" name="warehouseId">
-                                <Select allowClear placeholder="Select warehouse" className="rounded-lg w-full" size="large">
-                                    {warehouses.map((w) => (
-                                        <Option key={w.id} value={w.id}>{w.name}</Option>
-                                    ))}
-                                </Select>
-                            </Form.Item>
-                        </Col>
-                        <Col xs={24} md={12}>
                             <Form.Item label="eBay ID" name="ebayId">
                                 <Input placeholder="e.g. CMAY_PRD_R_1_CH" className="rounded-lg" />
                             </Form.Item>
@@ -849,6 +868,39 @@ export default function EditProduct() {
             children: (
                 <Card className="rounded-2xl shadow-sm border-gray-100">
                     <Row gutter={16}>
+                        <Col xs={24} md={8}>
+                            <Form.Item label="Opening Stock (Initial Units)" name="openingStock" tooltip="Enter the starting quantity for this product">
+                                <InputNumber className="w-full rounded-lg border-blue-200" size="large" min={0} step={0.00000001} placeholder="e.g. 100" />
+                            </Form.Item>
+                        </Col>
+                        <Col xs={24} md={8}>
+                            <Form.Item label="Default Warehouse" name="warehouseId">
+                                <Select allowClear placeholder="Select warehouse" className="rounded-lg w-full" size="large">
+                                    {warehouses.map((w) => (
+                                        <Option key={w.id} value={w.id}>{w.name}</Option>
+                                    ))}
+                                </Select>
+                            </Form.Item>
+                        </Col>
+                        <Col xs={24} md={8}>
+                            <Form.Item label="Initial Storage Location">
+                                <Form.Item name="locationId" noStyle>
+                                    <Select 
+                                        allowClear 
+                                        placeholder={warehouseId ? "Select location" : "First select a warehouse"} 
+                                        className="rounded-lg w-full" 
+                                        size="large"
+                                        disabled={!warehouseId}
+                                    >
+                                        {locations.map((loc) => (
+                                            <Option key={loc.id} value={loc.id}>
+                                                {loc.name} {loc.Zone ? `(${loc.Zone.name})` : ''}
+                                            </Option>
+                                        ))}
+                                    </Select>
+                                </Form.Item>
+                            </Form.Item>
+                        </Col>
                         <Col xs={24} md={8}>
                             <Form.Item label="Reorder Point" name="reorderLevel">
                                 <InputNumber className="w-full rounded-lg" size="large" min={0} step={0.00000001} />

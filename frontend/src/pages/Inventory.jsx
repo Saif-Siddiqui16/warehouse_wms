@@ -277,7 +277,6 @@ export default function Inventory() {
             title: 'Actions',
             key: 'actions',
             width: 140,
-            width: 140,
             render: (_, record) => (
                 <Space>
                     <Tooltip title="View Details">

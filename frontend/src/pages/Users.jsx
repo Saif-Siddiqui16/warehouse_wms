@@ -196,7 +196,6 @@ export default function Users() {
             title: 'Actions',
             key: 'act',
             width: 180,
-            width: 180,
             render: (_, r) => (
                 <Space size="small" wrap>
                     <Button type="link" size="small" icon={<EyeOutlined />} className="p-0 text-blue-600" onClick={() => openView(r)}>View</Button>
