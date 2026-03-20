@@ -139,6 +139,7 @@ export default function Production() {
       setIsStockModalVisible(false);
       setStockCheckResult(null);
       await fetchOrders();
+      await fetchDeps();
     } catch (err) {
       console.error('Start failed:', err);
       message.error(err.message || 'Failed to start');
@@ -153,7 +154,8 @@ export default function Production() {
         message.success('✨ Production completed! Stock added to Finished Goods.');
         setIsCompleteModalVisible(false);
         setCompletingOrder(null);
-        fetchOrders();
+        await fetchOrders();
+        await fetchDeps();
     } catch (err) {
         message.error(err.message || 'Completion failed');
     }
@@ -165,13 +167,17 @@ export default function Production() {
     const areaNames = { 1: 'Painting', 2: 'Candle', 3: 'Lab' };
     const areaName = areaNames[order.productionAreaId] || 'General';
     
-    const itemsHtml = order.ProductionOrderItems?.map(item => `
-      <tr>
-        <td style="padding: 8px; border: 1px solid #ddd;">${item.Product?.name}</td>
-        <td style="padding: 8px; border: 1px solid #ddd;">${item.Product?.sku}</td>
-        <td style="padding: 8px; border: 1px solid #ddd; text-align: right;">${formatNumber(item.quantityRequired)} ${item.unit || 'g'}</td>
-      </tr>
-    `).join('') || '<tr><td colspan="3">No items</td></tr>';
+    const itemsHtml = order.ProductionOrderItems?.map(item => {
+      const itemWhName = warehouses.find(w => w.id === item.warehouseId)?.name || 'N/A';
+      return `
+        <tr>
+          <td style="padding: 8px; border: 1px solid #ddd;">${item.Product?.name}</td>
+          <td style="padding: 8px; border: 1px solid #ddd;">${item.Product?.sku}</td>
+          <td style="padding: 8px; border: 1px solid #ddd; text-align: right;">${formatNumber(item.quantityRequired)} ${item.unit || 'g'}</td>
+          <td style="padding: 8px; border: 1px solid #ddd;">${itemWhName}</td>
+        </tr>
+      `;
+    }).join('') || '<tr><td colspan="4">No items</td></tr>';
 
     printWindow.document.write(`
       <html>
@@ -227,7 +233,8 @@ export default function Production() {
               <tr>
                 <th>Product Name</th>
                 <th>SKU</th>
-                <th>Quantity Used</th>
+                <th>Quantity Required</th>
+                <th>Source Warehouse</th>
               </tr>
             </thead>
             <tbody>
@@ -240,7 +247,12 @@ export default function Production() {
           </div>
           
           <script>
-            window.onload = function() { window.print(); window.close(); };
+            window.onload = function() {
+              window.print();
+              window.onafterprint = function() { window.close(); };
+              // Fallback for browsers that don't support onafterprint
+              setTimeout(function() { window.close(); }, 500);
+            };
           </script>
         </body>
       </html>
@@ -385,19 +397,21 @@ export default function Production() {
 
             {/* COMPLETED */}
             {currentStatus === 'COMPLETED' && (
-              <Space>
-                <Tag bordered={false} color="success" className="rounded-lg font-bold">
-                  🏁 Done
-                </Tag>
-                <Button 
-                  size="small" 
-                  icon={<Printer size={14} />} 
-                  onClick={() => handlePrint(record)}
-                  className="rounded-lg hover:text-blue-600 hover:border-blue-600"
-                >
-                  Print Recap
-                </Button>
-              </Space>
+              <Tag bordered={false} color="success" className="rounded-lg font-bold">
+                🏁 Done
+              </Tag>
+            )}
+
+            {/* PRINT ACTION - For all orders except Cancelled */}
+            {currentStatus !== 'CANCELLED' && (
+              <Button 
+                size="small" 
+                icon={<Printer size={14} />} 
+                onClick={() => handlePrint(record)}
+                className="rounded-lg hover:text-blue-600 hover:border-blue-600"
+              >
+                Print Recap
+              </Button>
             )}
 
             {/* CANCELLED */}
