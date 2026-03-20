@@ -11,7 +11,7 @@ const INTEGRATIONS = [
     {
         id: 'amazon_fba',
         name: 'Amazon FBA',
-        description: 'Fulfillment by Amazon — Orders aur inventory automatically sync hoga Amazon ke saath',
+        description: 'Fulfillment by Amazon — Orders and inventory automatically sync with Amazon',
         icon: '🟠',
         color: '#FF9900',
         bgColor: '#FFF8EC',
@@ -25,7 +25,7 @@ const INTEGRATIONS = [
     {
         id: 'amazon_mfn',
         name: 'Amazon MFN',
-        description: 'Merchant Fulfilled Network — Apne warehouse se Amazon orders fulfill karo',
+        description: 'Merchant Fulfilled Network — Fulfill Amazon orders from your own warehouse',
         icon: '🔶',
         color: '#E08000',
         bgColor: '#FFF8EC',
@@ -38,7 +38,7 @@ const INTEGRATIONS = [
     {
         id: 'shopify',
         name: 'Shopify',
-        description: 'Shopify store ke saath real-time inventory sync — Orders seedha WMS mein aayenge',
+        description: 'Real-time inventory sync with Shopify store — Orders come directly into WMS',
         icon: '🟢',
         color: '#96BF48',
         bgColor: '#F0FBF0',
@@ -52,7 +52,7 @@ const INTEGRATIONS = [
     {
         id: 'ebay',
         name: 'eBay',
-        description: 'eBay store se orders import karo aur inventory sync karo automatically',
+        description: 'Import orders from eBay store and sync inventory automatically',
         icon: '🔴',
         color: '#E53238',
         bgColor: '#FFF0F0',
@@ -99,7 +99,7 @@ export default function MarketplaceApi() {
             message.success(`✅ ${activeIntegration.name} successfully connected!`);
             setModalOpen(false);
         } catch (err) {
-            message.error('Connection failed. Credentials check karo.');
+            message.error('Connection failed. Please check your credentials.');
         } finally {
             setConnecting(false);
         }
@@ -107,9 +107,9 @@ export default function MarketplaceApi() {
 
     const handleDisconnect = (id, name) => {
         Modal.confirm({
-            title: `${name} disconnect karna chahte ho?`,
-            content: 'Sync band ho jaayegi. Existing orders aur inventory untouched rahegi.',
-            okText: 'Haan, Disconnect karo',
+            title: `Are you sure you want to disconnect ${name}?`,
+            content: 'Sync will stop. Existing orders and inventory will remain untouched.',
+            okText: 'Yes, Disconnect',
             okType: 'danger',
             cancelText: 'Cancel',
             onOk: () => {
@@ -142,7 +142,7 @@ export default function MarketplaceApi() {
                 <div>
                     <h1 className="text-2xl font-bold text-slate-800">Integrations</h1>
                     <p className="text-gray-500 text-sm mt-1">
-                        Amazon aur Shopify ke saath directly connect karo — Orders aur stock automatically sync hoga
+                        Connect directly with Amazon and Shopify — Orders and stock will sync automatically
                     </p>
                 </div>
 
@@ -256,12 +256,12 @@ export default function MarketplaceApi() {
                 <div className="p-4 bg-blue-50 rounded-xl border border-blue-100 flex gap-3">
                     <InfoCircleOutlined className="text-blue-500 mt-0.5 shrink-0" />
                     <div className="text-sm text-blue-700">
-                        <p className="font-semibold mb-1">Integration kaise kaam karta hai?</p>
+                        <p className="font-semibold mb-1">How does integration work?</p>
                         <ul className="space-y-1 list-disc list-inside text-blue-600 text-xs">
-                            <li>Connect dabao → apne platform ke API credentials daalo</li>
-                            <li>Orders automatically WMS mein import honge</li>
-                            <li>Inventory real-time sync hogi — overselling band</li>
-                            <li>"Sync Now" se manually latest data khicho</li>
+                            <li>Click Connect → Enter your platform's API credentials</li>
+                            <li>Orders are automatically imported into the WMS</li>
+                            <li>Inventory syncs in real-time — preventing overselling</li>
+                            <li>Use "Sync Now" to manually fetch latest data</li>
                         </ul>
                     </div>
                 </div>
@@ -273,7 +273,7 @@ export default function MarketplaceApi() {
                     title={
                         <div className="flex items-center gap-2">
                             <span className="text-xl">{activeIntegration.icon}</span>
-                            <span>{activeIntegration.name} Connect karo</span>
+                            <span>Connect {activeIntegration.name}</span>
                         </div>
                     }
                     open={modalOpen}
@@ -289,7 +289,7 @@ export default function MarketplaceApi() {
                                 key={field.name}
                                 label={field.label}
                                 name={field.name}
-                                rules={field.required ? [{ required: true, message: `${field.label} required hai` }] : []}
+                                rules={field.required ? [{ required: true, message: `${field.label} is required` }] : []}
                             >
                                 <Input
                                     placeholder={field.placeholder}

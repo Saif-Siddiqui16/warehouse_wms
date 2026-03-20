@@ -454,14 +454,13 @@ export default function EditProduct() {
                         </Col>
                         <Col xs={24} md={12}>
                             <Form.Item label="Type" name="productType" rules={[{ required: true, message: 'Required' }]}>
-                                <div className="space-y-2">
-                                    <Select className="rounded-lg w-full" size="large" options={[
-                                        { value: 'RAW_MATERIAL', label: '🧪 Raw Material (for production)' },
-                                        { value: 'PRODUCTION', label: '🏭 Finished Product (produced)' },
-                                        { value: 'SIMPLE', label: '📦 Simple Product (buy/sell)' },
-                                        { value: 'BUNDLE', label: '🛒 Bundle' },
-                                    ]} />
-                                </div>
+                                <Select className="rounded-lg w-full" size="large" options={[
+                                    { value: 'RAW_MATERIAL', label: '🧪 Raw Material (for production)' },
+                                    { value: 'PRODUCTION', label: '🏭 Finished Product (produced)' },
+                                    { value: 'SIMPLE', label: '📦 Simple Product (buy/sell)' },
+                                    { value: 'BUNDLE', label: '🛒 Bundle' },
+                                    { value: 'MULTICOMBO', label: '📦 Multicombo' },
+                                ]} />
                             </Form.Item>
                         </Col>
                         <Col xs={24} md={12}>
@@ -494,7 +493,7 @@ export default function EditProduct() {
                             </Form.Item>
                         </Col>
                     </Row>
-                    {productType === 'BUNDLE' && (
+                    {(productType === 'BUNDLE' || productType === 'MULTICOMBO') && (
                         <div className="mt-6 border-t pt-6 bg-slate-50/30 p-4 rounded-xl">
                             <h4 className="font-bold text-slate-800 mb-2">Bundle Components</h4>
                             <p className="text-gray-500 text-sm mb-4">Add products that are included in this bundle/kit. Virtual inventory gets computed based on lowest component limits.</p>
